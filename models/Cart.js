@@ -20,24 +20,21 @@ class Cart {
       return cart;
     } catch (error) {
       console.error("Error occurred while searching cart");
-
       return { items: [] };
     }
   }
 
-  static async add(productName) {
+  static async add(product) {
+    if (!product || !product.name) {
+      throw new Error("Invalid product data");
+    }
+
     const db = getDatabase();
 
     try {
-      const product = await Product.findByName(productName);
-
-      if (!product) {
-        throw Error(`Product '${productName}' not found`);
-      }
-
       const cart = await this.getCart();
       const searchedProduct = cart.items.find(
-        (item) => item.product.name === productName
+        (item) => item.product.name === product.name
       );
 
       if (searchedProduct) {
@@ -51,6 +48,7 @@ class Cart {
         .updateOne({}, { $set: { items: cart.items } });
     } catch (error) {
       console.error("Error occurred while adding product to cart");
+      throw error;
     }
   }
 
@@ -111,6 +109,23 @@ class Cart {
         .updateOne({}, { $set: { items: [] } });
     } catch (error) {
       console.error("Error occurred while clearing cart");
+    }
+  }
+
+  static async deleteProductByName(productName) {
+    const db = getDatabase();
+
+    try {
+      const cart = await this.getCart();
+      const updatedItems = cart.items.filter(
+        (item) => item.product.name !== productName
+      );
+
+      await db
+        .collection(COLLECTION_NAME)
+        .updateOne({}, { $set: { items: updatedItems } });
+    } catch (error) {
+      console.error("Error occurred while deleting product from cart");
     }
   }
 }

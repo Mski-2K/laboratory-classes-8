@@ -10,6 +10,6 @@ exports.getHomeView = async (request, response) => {
     path: "/",
     activeLinkPath: "/",
     menuLinks: MENU_LINKS,
-    cartCount,
+    cartCount: cartCount,
   });
 };

@@ -3,11 +3,17 @@ const Cart = require("../models/Cart");
 
 const { STATUS_CODE } = require("../constants/statusCode");
 
-exports.addProductToCart = async (request, response) => {
-  await Product.add(request.body);
-  await Cart.add(request.body.name);
+exports.addProductToCart = async (productData) => {
+  if (!productData || !productData.name) {
+    throw new Error("Invalid product data");
+  }
 
-  response.status(STATUS_CODE.FOUND).redirect("/products/new");
+  const product = await Product.findByName(productData.name);
+  if (!product) {
+    throw new Error(`Product '${productData.name}' not found`);
+  }
+
+  await Cart.add(product);
 };
 
 exports.getProductsCount = async () => {

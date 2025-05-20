@@ -11,7 +11,7 @@ exports.getLogoutView = async (request, response) => {
     path: "/logout",
     activeLinkPath: "/logout",
     menuLinks: LOGOUT_LINKS,
-    cartCount,
+    cartCount: cartCount,
   });
 };
 

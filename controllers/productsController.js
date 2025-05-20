@@ -1,4 +1,5 @@
 const Product = require("../models/Product");
+const Cart = require("../models/Cart");
 
 const { MENU_LINKS } = require("../constants/navigation");
 const { STATUS_CODE } = require("../constants/statusCode");
@@ -6,7 +7,7 @@ const { STATUS_CODE } = require("../constants/statusCode");
 const cartController = require("./cartController");
 
 exports.getProductsView = async (request, response) => {
-  const cartCount = cartController.getProductsCount();
+  const cartCount = await cartController.getProductsCount();
   const products = await Product.getAll();
 
   response.render("products.ejs", {
@@ -15,24 +16,24 @@ exports.getProductsView = async (request, response) => {
     menuLinks: MENU_LINKS,
     activeLinkPath: "/products",
     products,
-    cartCount,
+    cartCount: cartCount,
   });
 };
 
 exports.getAddProductView = async (request, response) => {
-  const cartCount = cartController.getProductsCount();
+  const cartCount = await cartController.getProductsCount();
 
   response.render("add-product.ejs", {
     headTitle: "Shop - Add product",
     path: "/add",
     menuLinks: MENU_LINKS,
     activeLinkPath: "/products/add",
-    cartCount,
+    cartCount: cartCount,
   });
 };
 
 exports.getNewProductView = async (request, response) => {
-  const cartCount = cartController.getProductsCount();
+  const cartCount = await cartController.getProductsCount();
   const newestProduct = await Product.getLast();
 
   response.render("new-product.ejs", {
@@ -41,12 +42,12 @@ exports.getNewProductView = async (request, response) => {
     activeLinkPath: "/products/new",
     menuLinks: MENU_LINKS,
     newestProduct,
-    cartCount,
+    cartCount: cartCount,
   });
 };
 
 exports.getProductView = async (request, response) => {
-  const cartCount = cartController.getProductsCount();
+  const cartCount = await cartController.getProductsCount();
   const name = request.params.name;
 
   const product = await Product.findByName(name);
@@ -57,7 +58,7 @@ exports.getProductView = async (request, response) => {
     activeLinkPath: `/products/${name}`,
     menuLinks: MENU_LINKS,
     product,
-    cartCount,
+    cartCount: cartCount,
   });
 };
 
@@ -66,4 +67,11 @@ exports.deleteProduct = async (request, response) => {
   await Product.deleteByName(name);
 
   response.status(STATUS_CODE.OK).json({ success: true });
+};
+
+exports.addProduct = async (request, response) => {
+  await Product.add(request.body);
+  await Cart.add(request.body.name);
+
+  response.status(STATUS_CODE.FOUND).redirect("/products/new");
 };
